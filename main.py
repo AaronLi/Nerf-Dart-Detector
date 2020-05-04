@@ -1,6 +1,7 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import polar
 
 def get_parts_of_colour(low_colour, high_colour, image, erosions = 0, dilations = 0):
     threshold = cv2.inRange(image, low_colour, high_colour)
@@ -90,13 +91,7 @@ def find_darts(image, show_stages = False):
     potential_darts = []
     for dart in body_points:
         for tip in tip_points:
-            dx = dart.pt[0] - tip.pt[0]
-            dy = dart.pt[1] - tip.pt[1]
-            slope = dy/dx
-            rho = abs(-tip.pt[0] + slope * tip.pt[1]) / (slope**2 + 1)**0.5
-            theta = np.arctan2(dy, dx)
-            potential_darts.append((rho, theta))
-            print(theta, rho, np.hypot(dx, dy), end=', ')
+            rho,theta = polar.get_polar(dart.pt,tip.pt)
             a = np.cos(theta)
             b = np.sin(theta)
             x0 = a * rho
@@ -146,21 +141,21 @@ higher_from_ground = cv2.cvtColor(cv2.imread("data/IMG_20200503_185246.jpg"), cv
 medium_height = cv2.cvtColor(cv2.imread("data/IMG_20200503_191741.jpg"), cv2.COLOR_BGR2HSV)
 single_dart = cv2.cvtColor(cv2.imread("data/IMG_20200503_202145.jpg"), cv2.COLOR_BGR2HSV)
 
-plt.imshow(cv2.cvtColor(find_darts(three_darts), cv2.COLOR_HSV2RGB))
+plt.imshow(cv2.cvtColor(find_darts(three_darts,True), cv2.COLOR_HSV2RGB))
 plt.show()
 
 
-plt.imshow(cv2.cvtColor(find_darts(close_to_ground), cv2.COLOR_HSV2RGB))
-plt.show()
-
-
-plt.imshow(cv2.cvtColor(find_darts(higher_from_ground), cv2.COLOR_HSV2RGB))
-plt.show()
-
-
-plt.imshow(cv2.cvtColor(find_darts(medium_height), cv2.COLOR_HSV2RGB))
-plt.show()
-
-
-plt.imshow(cv2.cvtColor(find_darts(single_dart), cv2.COLOR_HSV2RGB))
-plt.show()
+# plt.imshow(cv2.cvtColor(find_darts(close_to_ground), cv2.COLOR_HSV2RGB))
+# plt.show()
+#
+#
+# plt.imshow(cv2.cvtColor(find_darts(higher_from_ground), cv2.COLOR_HSV2RGB))
+# plt.show()
+#
+#
+# plt.imshow(cv2.cvtColor(find_darts(medium_height), cv2.COLOR_HSV2RGB))
+# plt.show()
+#
+#
+# plt.imshow(cv2.cvtColor(find_darts(single_dart), cv2.COLOR_HSV2RGB))
+# plt.show()
