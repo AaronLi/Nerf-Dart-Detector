@@ -13,16 +13,15 @@ def get_parts_of_colour(low_colour, high_colour, image, erosions = 0, dilations 
 def get_dart_body_detector():
     dart_detector_params = cv2.SimpleBlobDetector_Params()
     dart_detector_params.minThreshold = 30
-    dart_detector_params.thresholdStep = 10
+    dart_detector_params.thresholdStep = 20
     dart_detector_params.maxThreshold = 250
-    dart_detector_params.minRepeatability = 1
+    dart_detector_params.minRepeatability = 2
     dart_detector_params.filterByArea = True
     dart_detector_params.minArea = 50
     dart_detector_params.filterByColor = False
     dart_detector_params.filterByInertia = False
-    #dart_detector_params.maxInertiaRatio = 10000
     dart_detector_params.filterByConvexity = True
-    dart_detector_params.minConvexity = 0.7
+    dart_detector_params.minConvexity = 0.8
     dart_detector_params.filterByCircularity = False
     return cv2.SimpleBlobDetector_create(dart_detector_params)
 
@@ -39,7 +38,7 @@ def get_dart_tip_detector():
     tip_detector_params.filterByInertia = True
     tip_detector_params.maxInertiaRatio = 0.7
     tip_detector_params.filterByConvexity = True
-    tip_detector_params.minConvexity = 0.4
+    tip_detector_params.minConvexity = 0.6
     tip_detector_params.filterByCircularity = False
     return cv2.SimpleBlobDetector_create(tip_detector_params)
 
@@ -49,23 +48,23 @@ def get_dart_tip_detector():
 #103, 251, 116 dart colour low opencv hsv
 #[60, 188, 253] dart colour high rgb
 #102, 195, 252.96 dart colour high opencv hsv
-dart_colour_low = np.array((96, 170, 0), dtype=np.uint8)
+dart_colour_low = np.array((96, 100, 0), dtype=np.uint8)
 dart_colour_high = np.array((108,255, 255), dtype=np.uint8)
 
-tip_colour_low = np.array((117, 100, 20), dtype=np.uint8)
-tip_colour_high = np.array((145, 255, 255), dtype=np.uint8)
+tip_colour_low = np.array((117, 90, 20), dtype=np.uint8)
+tip_colour_high = np.array((150, 255, 255), dtype=np.uint8)
 def find_darts(image, show_stages = False):
     image = cv2.blur(cv2.resize(image, (640, 480)), (4, 4))
     dart_bodies = get_parts_of_colour(dart_colour_low, dart_colour_high, image, erosions=5, dilations= 3)
 
-    dart_tips = get_parts_of_colour(tip_colour_low, tip_colour_high, image, erosions=1, dilations=3)
+    dart_tips = get_parts_of_colour(tip_colour_low, tip_colour_high, image, erosions=2, dilations=5)
     dart_body_detector = get_dart_body_detector()
     dart_tip_detector = get_dart_tip_detector()
     detect_bodies = cv2.blur(cv2.cvtColor(cv2.cvtColor(dart_bodies, cv2.COLOR_HSV2BGR), cv2.COLOR_BGR2GRAY), (4, 4))
     body_points = dart_body_detector.detect(detect_bodies)
     detect_tips = cv2.blur(cv2.cvtColor(cv2.cvtColor(dart_tips, cv2.COLOR_HSV2BGR), cv2.COLOR_BGR2GRAY), (4, 4))
     tip_points = dart_tip_detector.detect(detect_tips)
-    body_edges = cv2.Canny(detect_bodies, 50, 150, apertureSize=5)
+    body_edges = cv2.Canny(detect_bodies, 150, 200, apertureSize=5)
 
 
     lines = cv2.HoughLines(body_edges, 1,np.pi/360, 50)
@@ -81,17 +80,34 @@ def find_darts(image, show_stages = False):
             x2 = int(x0 - 1000*(-b))
             y2 = int(y0 - 1000*(a))
 
-            #cv2.line(image,(x1,y1),(x2,y2),(0,0,255),1)
+            cv2.line(image,(x1,y1),(x2,y2),(0,0,255),1)
+        lines = [line[0] for line in lines]
+        lines.sort(key=lambda x: x[1])
+        print(len(lines), lines)
 
     for tip in tip_points:
         cv2.circle(image, (int(tip.pt[0]), int(tip.pt[1])), int(tip.size), (0, 255, 255), thickness=2)
-
+    potential_darts = []
     for dart in body_points:
-        angles = []
         for tip in tip_points:
             dx = dart.pt[0] - tip.pt[0]
             dy = dart.pt[1] - tip.pt[1]
-            angle = dy/dx
+            slope = dy/dx
+            rho = abs(-tip.pt[0] + slope * tip.pt[1]) / (slope**2 + 1)**0.5
+            theta = np.arctan2(dy, dx)
+            potential_darts.append((rho, theta))
+            print(theta, rho, np.hypot(dx, dy), end=', ')
+            a = np.cos(theta)
+            b = np.sin(theta)
+            x0 = a * rho
+            y0 = b * rho
+            x1 = int(x0 + 1000 * (-b))
+            y1 = int(y0 + 1000 * (a))
+            x2 = int(x0 - 1000 * (-b))
+            y2 = int(y0 - 1000 * (a))
+
+            cv2.line(image, (x1, y1), (x2, y2), (0, 255, 255), 1)
+        print()
         cv2.circle(image, (int(dart.pt[0]), int(dart.pt[1])), int(dart.size * 2), (90, 255, 255), thickness=2)
 
     if show_stages:
@@ -124,22 +140,27 @@ def find_darts(image, show_stages = False):
 #     if cv2.waitKey(1) == ord('q'):
 #         running = False
 # cv2.destroyAllWindows()
-image = cv2.cvtColor(cv2.imread("data/IMG_20200503_165208.jpg"), cv2.COLOR_BGR2HSV)
+three_darts = cv2.cvtColor(cv2.imread("data/IMG_20200503_165208.jpg"), cv2.COLOR_BGR2HSV)
+close_to_ground = cv2.cvtColor(cv2.imread("data/IMG_20200502_151557.jpg"), cv2.COLOR_BGR2HSV)
+higher_from_ground = cv2.cvtColor(cv2.imread("data/IMG_20200503_185246.jpg"), cv2.COLOR_BGR2HSV)
+medium_height = cv2.cvtColor(cv2.imread("data/IMG_20200503_191741.jpg"), cv2.COLOR_BGR2HSV)
+single_dart = cv2.cvtColor(cv2.imread("data/IMG_20200503_202145.jpg"), cv2.COLOR_BGR2HSV)
 
-plt.imshow(cv2.cvtColor(find_darts(image), cv2.COLOR_HSV2RGB))
+plt.imshow(cv2.cvtColor(find_darts(three_darts), cv2.COLOR_HSV2RGB))
 plt.show()
 
-image = cv2.cvtColor(cv2.imread("data/IMG_20200502_151557.jpg"), cv2.COLOR_BGR2HSV)
 
-plt.imshow(cv2.cvtColor(find_darts(image), cv2.COLOR_HSV2RGB))
+plt.imshow(cv2.cvtColor(find_darts(close_to_ground), cv2.COLOR_HSV2RGB))
 plt.show()
 
-image = cv2.cvtColor(cv2.imread("data/IMG_20200503_185246.jpg"), cv2.COLOR_BGR2HSV)
 
-plt.imshow(cv2.cvtColor(find_darts(image), cv2.COLOR_HSV2RGB))
+plt.imshow(cv2.cvtColor(find_darts(higher_from_ground), cv2.COLOR_HSV2RGB))
 plt.show()
 
-image = cv2.cvtColor(cv2.imread("data/IMG_20200503_191741.jpg"), cv2.COLOR_BGR2HSV)
 
-plt.imshow(cv2.cvtColor(find_darts(image, True), cv2.COLOR_HSV2RGB))
+plt.imshow(cv2.cvtColor(find_darts(medium_height), cv2.COLOR_HSV2RGB))
+plt.show()
+
+
+plt.imshow(cv2.cvtColor(find_darts(single_dart), cv2.COLOR_HSV2RGB))
 plt.show()
