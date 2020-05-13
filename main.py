@@ -156,7 +156,6 @@ def find_darts(image, show_stages=False):
         bodyb = int(potent[2].pt[1])
         bodypoint = (bodya, bodyb)
         tippoint = (tipa, tipb)
-        print(potent[0])
         cv2.putText(image, str(int(potent[0])), bodypoint, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
         cv2.putText(image, str(int(potent[0])), tippoint, cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2, cv2.LINE_AA)
 
