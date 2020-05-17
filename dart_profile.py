@@ -1,8 +1,6 @@
 import collections
 import json
 
-import numpy as np
-
 import colour_conversions
 
 ColourIsolationSpec = collections.namedtuple("ColourIsolationSpec",
@@ -32,7 +30,7 @@ class DartProfile:
     these contain the details required to extract a dart from the image
     """
     def __init__(self, dart_name, tip_low=(0, 0, 0), tip_high=(0, 0, 0), body_low=(0, 0, 0), body_high=(0, 0, 0), tip_erosions=0,
-                 tip_dilations=0, body_erosions=0, body_dilations=0) -> None:
+                 tip_dilations=0, body_erosions=0, body_dilations=0, identification_colour=(0, 0, 0)) -> None:
         """
         Constructor for DartProfile
         :param tip_low: The lower limit for possible tip colours
@@ -40,6 +38,7 @@ class DartProfile:
         :param body_low:  The lower limit for possible body colours
         :param body_high:  The upper limit for possible body colours
         """
+        self.identification_colour = identification_colour
         self.dart_name = dart_name
         self.body = ColourIsolationSpec(body_low, body_high, body_dilations, body_erosions)
         self.tip = ColourIsolationSpec(tip_low, tip_high, tip_dilations, tip_erosions)
@@ -53,5 +52,6 @@ class DartProfile:
 
         out.body = read_colour_isolation_specs(body_data)
         out.tip = read_colour_isolation_specs(tip_data)
+        out.identification_colour = colour_conversions.hsv360_100_100_to_hsv180_255_255(json_info['id_colour'])
 
         return out

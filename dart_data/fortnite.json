@@ -1,5 +1,6 @@
 {
-  "name": "Fortnite Elite Dart",
+  "name": "Fortnite",
+  "id_colour": [180, 100, 100],
   "body": {
     "low": [192, 39, 0],
     "high": [216, 100, 100],

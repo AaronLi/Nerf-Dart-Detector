@@ -1,14 +1,15 @@
 {
-  "name": "Standard Elite Dart",
+  "name": "Standard",
+  "id_colour": [250, 100, 100],
   "body": {
-    "low": [192, 39, 0],
-    "high": [216, 100, 100],
+    "low": [220, 60, 23],
+    "high": [236, 100, 80],
     "erosions": 5,
     "dilations": 3
   },
   "tip": {
-    "low": [234, 35, 8],
-    "high": [300, 100, 100],
+    "low": [9, 50, 40],
+    "high": [16, 100, 100],
     "erosions": 2,
     "dilations": 5
   }

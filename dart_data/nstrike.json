@@ -1,0 +1,16 @@
+{
+  "name": "N-Strike",
+  "id_colour": [30, 100, 100],
+  "body": {
+    "low": [15, 20, 0],
+    "high": [24, 100, 100],
+    "erosions": 5,
+    "dilations": 3
+  },
+  "tip": {
+    "low": [9, 50, 40],
+    "high": [16, 100, 100],
+    "erosions": 2,
+    "dilations": 5
+  }
+}
