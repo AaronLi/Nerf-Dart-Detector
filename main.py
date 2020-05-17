@@ -1,3 +1,5 @@
+import time
+
 import cv2
 import matplotlib.pyplot as plt
 
@@ -45,18 +47,18 @@ if __name__ == '__main__':
     #
     # plt.imshow(cv2.cvtColor(render_dart_results(darts, higher_from_ground, fortnite_dart_profile), cv2.COLOR_HSV2RGB))
     # plt.show()
-    print(detector.profiles)
-    results, visualization = detector.find_darts(assorted_darts_low_height_partially_shadowed, True)
+    to_process = [assorted_darts_low_height_partially_shadowed, close_to_ground, higher_from_ground, three_darts, assorted_darts_high_height, assorted_darts_medium_height]
+    output_images = []
+    start_time = time.time()
+    for image in to_process:
+        results, visualization = detector.find_darts(image, True)
+        output_images.append(visualization)
+    run_time = time.time() - start_time
+    print(f'Finished {len(to_process)} images in {run_time:.2f} seconds ({len(to_process)/run_time: 0.2f} fps)')
 
-
-    plt.imshow(cv2.cvtColor(visualization, cv2.COLOR_HSV2RGB))
-    plt.show()
-
-    plt.imshow(cv2.cvtColor(detector.find_darts(close_to_ground, True)[1], cv2.COLOR_HSV2RGB))
-    plt.show()
-    #
-    plt.imshow(cv2.cvtColor(detector.find_darts(higher_from_ground, True)[1], cv2.COLOR_HSV2RGB))
-    plt.show()
+    for image in output_images:
+        plt.imshow(cv2.cvtColor(image, cv2.COLOR_HSV2RGB))
+        plt.show()
     #
     # plt.imshow(cv2.cvtColor(find_darts(medium_height, fortnite_dart_profile), cv2.COLOR_HSV2RGB))
     # plt.show()

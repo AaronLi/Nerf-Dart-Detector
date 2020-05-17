@@ -196,7 +196,6 @@ class DartDetector:
             if not dart[1] in used_combos and not dart[2] in used_combos and len(potential_darts) < min(len(tip_points),
                                                                                                         len(
                                                                                                             body_points)):
-                print(dart)
                 potential_darts.append((dart[0], (dart[1].pt[0], dart[1].pt[1]), (dart[2].pt[0], dart[2].pt[1])))
                 used_combos.append(dart[1])
                 used_combos.append(dart[2])
