@@ -48,21 +48,23 @@ class DartDetector:
     load the profiles for each dart and then provide with images to detect darts from
     """
 
-    def __init__(self):
+    def __init__(self, image_resolution=(640, 480)):
         """
 
         """
         super().__init__()
+        self.image_resolution = image_resolution
         self.profiles = []
         self.dart_finding_pool = pool.Pool(cpu_count())
 
-    def load_dart_profile(self, file_path):
+    def load_dart_profile(self, *args):
         """
         Loads a dart profile into the DartDetector
-        :param file_path:
+        you can pass in a list of profiles
         """
-        with open(file_path) as f:
-            self.profiles.append(dart_profile.DartProfile.read_from_file(f))
+        for file_path in args:
+            with open(file_path) as f:
+                self.profiles.append(dart_profile.DartProfile.read_from_file(f))
         return self
 
     @staticmethod
@@ -93,9 +95,10 @@ class DartDetector:
         :param visualize_results: Whether the function should visualize the results
         :return: The list of results and the visualization as a tuple (results, image)
         """
-        task_pool = ((image, profile) for profile in self.profiles)
+        search_image = cv2.resize(image, self.image_resolution)
+        task_pool = ((search_image, profile) for profile in self.profiles)
         results_out = []
-        output_image = image.copy()
+        output_image = search_image.copy()
         for found_darts, profile in self.dart_finding_pool.imap_unordered(DartDetector.query_image_for_profile, task_pool):
             results_out.append(found_darts)
             if visualize_results:
@@ -117,7 +120,7 @@ class DartDetector:
         dart_image = query[0]
         profile = query[1]
 
-        image = cv2.blur(cv2.resize(dart_image, (640, 480)), (4, 4))
+        image = cv2.blur(dart_image, (4, 4))
         dart_bodies = DartDetector.get_parts_of_colour(image, profile.body)
 
         dart_tips = DartDetector.get_parts_of_colour(image, profile.tip)
@@ -227,13 +230,15 @@ class DartDetector:
             bodyb = int(potent[2][1])
             bodypoint = (bodya, bodyb)
             tippoint = (tipa, tipb)
+            # instead of drawing to the body and stopping, continue a bit
+            dx = round((tipa - bodya) * 0.75)
+            dy = round((tipb - bodyb) * 0.75)
+            center_point = ((bodya + tipa) // 2, (bodyb + tipb) // 2)
+            cv2.line(image, tippoint, (bodya - dx, bodyb - dy), profile.identification_colour.tolist(), 5)
             cv2.putText(image, str(int(potent[0])), bodypoint, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (179, 0, 255), 1,
                         cv2.LINE_AA)
             cv2.putText(image, str(int(potent[0])), tippoint, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (179, 0, 255), 1,
                         cv2.LINE_AA)
-
-            center_point = ((bodya + tipa) // 2, (bodyb + tipb) // 2)
-            cv2.line(image, tippoint, bodypoint, profile.identification_colour.tolist(), 5)
             cv2.putText(image, profile.dart_name, center_point, cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 1,
                         cv2.LINE_AA)
             # print('Potential Dart', polar.get_polar(potent[2].pt, potent[1].pt))
