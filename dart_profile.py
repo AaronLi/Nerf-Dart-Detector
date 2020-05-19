@@ -55,3 +55,10 @@ class DartProfile:
         out.identification_colour = colour_conversions.hsv360_100_100_to_hsv180_255_255(json_info['id_colour'])
 
         return out
+
+    def __str__(self) -> str:
+        return f'"{self.dart_name}": colour: {self.identification_colour} {{body: {self.body.__str__()} tip: {self.tip.__str__()}}}'
+
+    def __repr__(self) -> str:
+        return f'{super().__repr__()}: {self.__str__()}'
+

@@ -1,14 +1,20 @@
 import cv2
 import numpy as np
 from matplotlib import pyplot as plt
-from typing import Tuple
+from typing import Tuple, List
 
 import dart_profile
 from multiprocessing import pool, cpu_count
 
 DartSearchQuery = Tuple[np.ndarray, dart_profile.DartProfile]
+DartSearchResult = Tuple[Tuple[float, cv2.KeyPoint], np.ndarray]
+
 
 def standard_body_blob_detector():
+    """
+
+    :return:
+    """
     dart_detector_params = cv2.SimpleBlobDetector_Params()
     dart_detector_params.minThreshold = 30
     dart_detector_params.thresholdStep = 20
@@ -25,6 +31,10 @@ def standard_body_blob_detector():
 
 
 def standard_tip_blob_detector():
+    """
+
+    :return:
+    """
     tip_detector_params = cv2.SimpleBlobDetector_Params()
     tip_detector_params.minThreshold = 30
     tip_detector_params.thresholdStep = 10
@@ -87,7 +97,7 @@ class DartDetector:
         keyed_final = cv2.bitwise_and(image, image, mask=dilating)
         return keyed_final
 
-    def find_darts(self, image: np.ndarray, visualize_results = False):
+    def find_darts(self, image: np.ndarray, visualize_results=False) -> DartSearchResult:
         """
         Finds all darts from the loaded profiles in the image
 
@@ -99,7 +109,8 @@ class DartDetector:
         task_pool = ((search_image, profile) for profile in self.profiles)
         results_out = []
         output_image = search_image.copy()
-        for found_darts, profile in self.dart_finding_pool.imap_unordered(DartDetector.query_image_for_profile, task_pool):
+        for found_darts, profile in self.dart_finding_pool.imap_unordered(DartDetector.query_image_for_profile,
+                                                                          task_pool):
             results_out.append(found_darts)
             if visualize_results:
                 DartDetector.render_dart_results(found_darts, output_image, profile)
@@ -153,7 +164,7 @@ class DartDetector:
         for tip in tip_points:
             cv2.circle(image, (int(tip.pt[0]), int(tip.pt[1])), int(tip.size), (0, 255, 255), thickness=2)
 
-        potential_darts = []  # np.full((min(len(tip_points), len(body_points)), 4),[np.inf, [0, 0], tip_points[0], body_points[0]])
+        potential_darts = []
         all_combos = []
         used_combos = []
 
@@ -224,20 +235,20 @@ class DartDetector:
         """
         for potent in potential_darts:
             # print(int(potent[3].pt[0]))
-            tipa = int(potent[1][0])
-            tipb = int(potent[1][1])
-            bodya = int(potent[2][0])
-            bodyb = int(potent[2][1])
-            bodypoint = (bodya, bodyb)
-            tippoint = (tipa, tipb)
+            tip_x = int(potent[1][0])
+            tip_y = int(potent[1][1])
+            body_x = int(potent[2][0])
+            body_y = int(potent[2][1])
+            body_point = (body_x, body_y)
+            tip_point = (tip_x, tip_y)
             # instead of drawing to the body and stopping, continue a bit
-            dx = round((tipa - bodya) * 0.75)
-            dy = round((tipb - bodyb) * 0.75)
-            center_point = ((bodya + tipa) // 2, (bodyb + tipb) // 2)
-            cv2.line(image, tippoint, (bodya - dx, bodyb - dy), profile.identification_colour.tolist(), 5)
-            cv2.putText(image, str(int(potent[0])), bodypoint, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (179, 0, 255), 1,
+            dx = round((tip_x - body_x) * 0.75)
+            dy = round((tip_y - body_y) * 0.75)
+            center_point = ((body_x + tip_x) // 2, (body_y + tip_y) // 2)
+            cv2.line(image, tip_point, (body_x - dx, body_y - dy), profile.identification_colour.tolist(), 5)
+            cv2.putText(image, str(int(potent[0])), body_point, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (179, 0, 255), 1,
                         cv2.LINE_AA)
-            cv2.putText(image, str(int(potent[0])), tippoint, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (179, 0, 255), 1,
+            cv2.putText(image, str(int(potent[0])), tip_point, cv2.FONT_HERSHEY_SIMPLEX, 0.6, (179, 0, 255), 1,
                         cv2.LINE_AA)
             cv2.putText(image, profile.dart_name, center_point, cv2.FONT_HERSHEY_SIMPLEX, 0.45, (0, 0, 255), 1,
                         cv2.LINE_AA)
@@ -258,6 +269,7 @@ class DartDetector:
         """
         dartiness = (line[0] % 180 - dart_theta % 180) ** 2 + (line[1] - dart_rho) ** 2
         return dartiness
+
 
 if __name__ == '__main__':
     a = DartDetector()
