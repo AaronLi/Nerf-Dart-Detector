@@ -46,6 +46,12 @@ class DartProfile:
     @staticmethod
     def read_from_file(json_file_in):
         json_info = json.load(json_file_in)
+        disabled = json_info.get('disabled')
+
+        if disabled:
+            print('Disabled: ', json_info['name'])
+            return
+
         out = DartProfile(json_info['name'])
         body_data = json_info['body']
         tip_data = json_info['tip']

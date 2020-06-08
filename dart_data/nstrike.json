@@ -1,6 +1,7 @@
 {
   "name": "N-Strike",
   "id_colour": [30, 100, 100],
+  "disabled": true,
   "body": {
     "low": [15, 20, 0],
     "high": [24, 100, 100],

@@ -3,6 +3,7 @@ import argparse
 import cv2
 import os
 import atexit
+import video_dart_tracker
 
 if __name__ == '__main__':
     CAMERA = 'camera'
@@ -15,7 +16,10 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    detector = DartDetector().load_dart_profile(*[os.path.join('dart_data', file) for file in os.listdir('dart_data')])
+    profiles = [os.path.join('dart_data', file) for file in os.listdir('dart_data')]
+
+    detector = DartDetector().load_dart_profile(profiles)
+    tracker = video_dart_tracker.VideoDartTracker(profiles, tracker=cv2.TrackerMOSSE_create)
     # function for getting the image to show onscreen
     get_output = None
 
@@ -27,8 +31,18 @@ if __name__ == '__main__':
         def read_camera_and_find_darts():
             ret, frame = camera.read()
 
-            points, result_image = detector.find_darts(cv2.cvtColor(frame, cv2.COLOR_BGR2HSV), True)
-            return cv2.cvtColor(result_image, cv2.COLOR_HSV2BGR)
+            if not ret:
+                return
+
+            frame = cv2.resize(frame, detector.image_resolution)
+
+            tracking_result = tracker.track_frame(cv2.cvtColor(frame, cv2.COLOR_BGR2HSV))
+
+            if tracking_result:
+                cv2.rectangle(frame, (int(tracking_result[0]), int(tracking_result[1])), (
+                int(tracking_result[0] + tracking_result[2]), int(tracking_result[1] + tracking_result[3])), 0xFFFFFF,
+                              5)
+            return frame
 
         get_output = read_camera_and_find_darts
         atexit.register(camera.release)
@@ -43,22 +57,25 @@ if __name__ == '__main__':
 
     elif args.input_mode == VIDEO:
         video = cv2.VideoCapture(args.input_source)
-
         def read_video_and_find_darts():
             ret, frame = video.read()
+            if not ret:
+                return
+            frame = cv2.resize(frame, detector.image_resolution)
 
-            points, result_image = detector.find_darts(cv2.cvtColor(frame, cv2.COLOR_BGR2HSV), True)
+            tracking_result = tracker.track_frame(cv2.cvtColor(frame, cv2.COLOR_BGR2HSV))
 
-            return cv2.cvtColor(result_image, cv2.COLOR_HSV2BGR)
+            if tracking_result:
+                cv2.rectangle(frame, (int(tracking_result[0]), int(tracking_result[1])), (int(tracking_result[0] + tracking_result[2]), int(tracking_result[1]+tracking_result[3])), 0xFFFFFF, 5)
+            return frame
         get_output = read_video_and_find_darts
         atexit.register(video.release)
 
     running = True
     while running:
-        try:
-            cv2.imshow('Dart Detector', get_output())
-        except cv2.error:
-            running = False
+        next_frame = get_output()
+        if next_frame is not None:
+            cv2.imshow('Dart Detector', next_frame)
 
         key = cv2.waitKey(1)
         if key == -1:

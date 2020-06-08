@@ -3,8 +3,8 @@ import matplotlib.pyplot as plt
 
 
 def get_polar(c1, c2, ori=np.zeros(2)):
-    m = (c1[1]-c2[1])/(c1[0]-c2[0]) #finds slope of line between two points
-    b = c1[1]-m*c1[0] # finds y-intercept of line between points
+    m = (c1[1]-c2[1])/(c1[0]-c2[0]) #finds slope of line_points between two points
+    b = c1[1]-m*c1[0] # finds y-intercept of line_points between points
     m_orth = -1/m # finds slope of intercept
     x = b/(m_orth-m) # finds POI
     y = m_orth*x
