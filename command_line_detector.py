@@ -74,7 +74,9 @@ if __name__ == '__main__':
     running = True
     while running:
         next_frame = get_output()
-        if next_frame is not None:
+        if next_frame is None:
+            running = False
+        else:
             cv2.imshow('Dart Detector', next_frame)
 
         key = cv2.waitKey(1)
