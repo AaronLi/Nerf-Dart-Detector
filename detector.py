@@ -123,12 +123,11 @@ class DartDetector:
         output_image = search_image.copy()
         for found_darts, profile in self.dart_finding_pool.imap_unordered(DartDetector.query_image_for_profile,
                                                                           task_pool):
-            results_out+=found_darts
+            results_out += found_darts
             if visualize_results:
                 DartDetector.render_dart_results(found_darts, output_image, profile)
 
         return sorted(results_out), output_image
-
 
     @staticmethod
     def query_image_for_profile(query: DartSearchQuery, show_stages=False):
@@ -157,32 +156,28 @@ class DartDetector:
         body_edges = cv2.Canny(detect_bodies, 150, 200, apertureSize=5)
 
         lines = cv2.HoughLinesP(body_edges, 1, np.pi / 360, 50)
-        if lines is not None:
-            lines = [line[0] for line in lines]
-            lines.sort(key=lambda x: x[1])
-
-        for tip in tip_points:
-            cv2.circle(image, (int(tip.pt[0]), int(tip.pt[1])), int(tip.size), (0, 255, 255), thickness=2)
 
         potential_darts = []
         all_combos = []
         used_combos = set()
 
-        for dart in body_points:
-            for tip in tip_points:
-    
-                for line in lines:
-                    dartiness = DartDetector.get_dartiness_points(line, (tip.pt[0], tip.pt[1], dart.pt[0], dart.pt[1]))
-                    all_combos.append(PotentialDart(dartiness, tip, dart))
+        if lines is not None:
+            lines = [line[0] for line in lines]
+            lines.sort(key=lambda x: x[1])
 
-            cv2.circle(image, (int(dart.pt[0]), int(dart.pt[1])), int(dart.size * 2), (90, 255, 255), thickness=2)
+            for dart in body_points:
+                for tip in tip_points:
+                    for line in lines:
+                        dartiness = DartDetector.get_dartiness_points(line,
+                                                                      (tip.pt[0], tip.pt[1], dart.pt[0], dart.pt[1]))
+                        all_combos.append(PotentialDart(dartiness, tip, dart))
 
-        all_combos.sort()
+                cv2.circle(image, (int(dart.pt[0]), int(dart.pt[1])), int(dart.size * 2), (90, 255, 255), thickness=2)
+
+            all_combos.sort()
 
         for dart in all_combos:
-            # print('Combo Dart', polar.get_polar(dart[3].pt, dart[2].pt))
-            # print('Line:', dart[1])
-            # print('Distance', dart[0], '\n')
+
             if not dart[1] in used_combos and not dart[2] in used_combos and len(potential_darts) < min(len(tip_points),
                                                                                                         len(
                                                                                                             body_points)):
@@ -210,6 +205,8 @@ class DartDetector:
                 used_combos.add(dart[1])
                 used_combos.add(dart[2])
         if show_stages:
+            for tip in tip_points:
+                cv2.circle(image, (int(tip.pt[0]), int(tip.pt[1])), int(tip.size), (0, 255, 255), thickness=2)
             plt.imshow(image)
             plt.show()
             plt.imshow(cv2.cvtColor(dart_bodies, cv2.COLOR_HSV2RGB))
@@ -286,7 +283,6 @@ class DartDetector:
 
         dart_tip_x, dart_tip_y, dart_body_x, dart_body_y = dart_points
 
-
         # metric based on distance from dart points to line_points points
         line_start_point = np.array((line_start_x, line_start_y))
         line_end_point = np.array((line_end_x, line_end_y))
@@ -302,7 +298,8 @@ class DartDetector:
         tip_end_distance = np.linalg.norm(line_end_point - dart_tip_point)
         body_start_distance = np.linalg.norm(line_start_point - dart_body_point)
 
-        line_distance = min(np.hypot(tip_start_distance, body_end_distance), np.hypot(tip_end_distance, body_start_distance))
+        line_distance = min(np.hypot(tip_start_distance, body_end_distance),
+                            np.hypot(tip_end_distance, body_start_distance))
 
         # metric based on line_points angle difference
         line_vector = np.array((line_end_x - line_start_x, line_end_y - line_start_y))
@@ -327,10 +324,11 @@ class DartDetector:
 
 if __name__ == '__main__':
     import math
+
     for i in range(int(math.pi * 100)):
-        angle = i/100
+        angle = i / 100
         print(angle, DartDetector.get_dartiness((0, 1), 1, angle))
 
     for i in range(int(math.pi * 100)):
-        angle = i/100
+        angle = i / 100
         print(angle, DartDetector.get_dartiness((0, 1), -1, angle))
