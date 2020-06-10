@@ -2,19 +2,42 @@ language: python
 
 jobs:
  include:
-  - name: "Python Windows Build"
+  - name: "Python Windows Build 3.6"
+    arch: amd64
+    os: windows
+    language: shell
+    python: 3.6
+
+  - name: "Python Windows Build 3.7"
     arch: amd64
     os: windows
     language: shell
     python: 3.7
 
-  - name: "Python RPi Build"
+  - name: "Python Windows Build 3.8"
+     arch: amd64
+     os: windows
+     language: shell
+     python: 3.8
+
+  - name: "Python RPi Build 3.6"
+    arch: arm64
+    os: linux
+    python: 3.6
+
+  - name: "Python RPi Build 3.7"
     arch: arm64
     os: linux
     python: 3.7
 
+  - name: "Python RPi Build 3.8"
+    arch: arm64
+    os: linux
+    python: 3.8
+
  allow_failures:
   - arch: arm64
+ fast_finish: true
 
 cache:
   - pip
