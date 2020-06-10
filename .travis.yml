@@ -7,18 +7,27 @@ jobs:
     os: windows
     language: shell
     python: 3.6
+    before_install:
+     - choco install python --version 3.6.0
+     - python -m pip install --upgrade-pip
 
   - name: "Python Windows Build 3.7"
     arch: amd64
     os: windows
     language: shell
     python: 3.7
+    before_install:
+     - choco install python --version 3.7.0
+     - python -m pip install --upgrade-pip
 
   - name: "Python Windows Build 3.8"
     arch: amd64
     os: windows
     language: shell
     python: 3.8
+    before_install:
+     - choco install python --version 3.8.0
+     - python -m pip install --upgrade-pip
 
   - name: "Python RPi Build 3.6"
     arch: arm64
