@@ -1,15 +1,27 @@
 language: python
-python:
- - "3.6"
- - "3.7"
- - "3.8"
+jobs:
+ include:
+  - name: "Python Windows Build"
+    python:
+     - "3.6"
+     - "3.7"
+     - "3.8"
+    arch:
+     - "amd64"
 
-arch:
-  - "amd64"
-  - "arm64"
+  - name: "Python RPi Build"
+    python:
+     - "3.6"
+     - "3.7"
+     - "3.8"
+    arch:
+     - "arm64"
 
-allow_failures:
-  - arch: "arm64"
+  - allow_failures:
+    - arch: "arm64"
+
+cache:
+  - pip
 
 install: pip install -r requirements.txt
 
