@@ -15,10 +15,10 @@ jobs:
     python: 3.7
 
   - name: "Python Windows Build 3.8"
-     arch: amd64
-     os: windows
-     language: shell
-     python: 3.8
+    arch: amd64
+    os: windows
+    language: shell
+    python: 3.8
 
   - name: "Python RPi Build 3.6"
     arch: arm64
