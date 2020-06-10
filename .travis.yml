@@ -1,23 +1,24 @@
 language: python
+
 jobs:
  include:
   - name: "Python Windows Build"
+    arch: amd64
+    os: windows
     python:
      - "3.6"
      - "3.7"
      - "3.8"
-    arch:
-     - "amd64"
 
   - name: "Python RPi Build"
+    arch: arm64
+    os: linux
     python:
      - "3.6"
      - "3.7"
      - "3.8"
-    arch:
-     - "arm64"
 
-  - allow_failures:
+  allow_failures:
     - arch: "arm64"
 
 cache:
