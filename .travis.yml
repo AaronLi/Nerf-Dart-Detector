@@ -62,4 +62,4 @@ script:
   - python3 -m pytest || python -m pytest
 
 after_success:
-  - git checkout master && git merge development -m "Merge successful development build"
+  - git checkout master && git merge development -m "Merge successful development build" && git push
