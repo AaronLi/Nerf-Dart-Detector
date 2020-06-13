@@ -16,27 +16,23 @@ class GenericShapeTest(unittest.TestCase):
 
         np.testing.assert_array_equal(s.transform, np.array(
             (
-                (1, 0, 0, 1),
-                (0, 1, 0, 1),
-                (0, 0, 1, 1),
-                (0, 0, 0, 1)
-            )
-        ))
-
-        s.translate(np.array((-1, -1, -1, 0)))
-
-        np.testing.assert_array_equal(s.transform, np.identity(4))
-
-        s.translate(np.array((-1, 0, 0, 0)))
-
-        np.testing.assert_array_equal(s.transform, np.array(
-            (
-                (1, 0, 0, -1),
+                (1, 0, 0, 0),
                 (0, 1, 0, 0),
                 (0, 0, 1, 0),
                 (0, 0, 0, 1)
             )
         ))
+
+        np.testing.assert_array_equal(s.pos, np.array((1, 1, 1, 1)))
+
+        s.translate(np.array((-1, -1, -1, 0)))
+
+        np.testing.assert_array_equal(s.pos, np.array((0, 0, 0, 1)))
+
+        s.translate(np.array((-1, 0, 0, 0)))
+
+        np.testing.assert_array_equal(s.pos, np.array((-1, 0, 0, 1)))
+
 
 
 
@@ -103,54 +99,54 @@ class GenericShapeTest(unittest.TestCase):
         # verify identity matrix is correct
         self.assertTrue(np.array_equal(s.transform, np.identity(4)))
 
-        # translate the shape
-        s.translate(GenericShape.X)
-
-        np.testing.assert_array_equal(s.transform, np.array(
-            (
-                (1, 0, 0, 1),
-                (0, 1, 0, 0),
-                (0, 0, 1, 0),
-                (0, 0, 0, 1)
-            )))
-
-        # rotate the shape
-        s.rotate_z(np.radians(90))
-
-        expected = np.array(
-            (
-                (0, -1, 0, 0),
-                (1, 0, 0, 1),
-                (0, 0, 1, 0),
-                (0, 0, 0, 1)
-            )
-        )
-        np.testing.assert_array_almost_equal(s.transform, expected, decimal=GenericShapeTest.EPSILON)
-
-        # rotate in x
-        s.rotate_x(np.radians(90))
-
-        np.testing.assert_array_almost_equal(s.transform, np.array(
-            (
-                (1, 0, 0, 0),
-                (0, 1, 0, 0),
-                (0, 0, 1, 1),
-                (0, 0, 0, 1)
-            )
-        ), decimal=GenericShapeTest.EPSILON)
-
-        # try two dimensions at once
-
-        s.translate(np.array((0, 1, 0, 0)))
-
-        s.rotate_y(np.radians(90))
-
-
-        np.testing.assert_array_almost_equal(s.transform, np.array(
-            (
-                (1, 0, 0, 1),
-                (0 ,1, 0, 1),
-                (0, 0, 1, 0),
-                (0, 0, 0, 1)
-            )
-        ), decimal=GenericShapeTest.EPSILON)
+        # # translate the shape
+        # s.translate(GenericShape.X)
+        #
+        # np.testing.assert_array_equal(s.transform, np.array(
+        #     (
+        #         (1, 0, 0, 0),
+        #         (0, 1, 0, 0),
+        #         (0, 0, 1, 0),
+        #         (0, 0, 0, 1)
+        #     )))
+        #
+        # # rotate the shape
+        # s.rotate_z(np.radians(90))
+        #
+        # expected = np.array(
+        #     (
+        #         (0, -1, 0, 0),
+        #         (1, 0, 0, 0),
+        #         (0, 0, 1, 0),
+        #         (0, 0, 0, 1)
+        #     )
+        # )
+        # np.testing.assert_array_almost_equal(s.transform, expected, decimal=GenericShapeTest.EPSILON)
+        #
+        # # rotate in x
+        # s.rotate_x(np.radians(90))
+        #
+        # np.testing.assert_array_almost_equal(s.transform, np.array(
+        #     (
+        #         (1, 0, 0, 0),
+        #         (0, 1, 0, 0),
+        #         (0, 0, 1, 0),
+        #         (0, 0, 0, 1)
+        #     )
+        # ), decimal=GenericShapeTest.EPSILON)
+        #
+        # # try two dimensions at once
+        #
+        # s.translate(np.array((0, 1, 0, 0)))
+        #
+        # s.rotate_y(np.radians(90))
+        #
+        #
+        # np.testing.assert_array_almost_equal(s.transform, np.array(
+        #     (
+        #         (1, 0, 0, 1),
+        #         (0 ,1, 0, 1),
+        #         (0, 0, 1, 0),
+        #         (0, 0, 0, 1)
+        #     )
+        # ), decimal=GenericShapeTest.EPSILON)

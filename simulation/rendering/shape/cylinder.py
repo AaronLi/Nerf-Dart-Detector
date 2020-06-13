@@ -3,12 +3,12 @@ import numpy as np
 
 
 class Cylinder(GenericShape):
-    def __init__(self, diameter, height, faces=20, transform=np.identity(4, dtype=float)):
-        super().__init__(transform)
+    def __init__(self, radius, height, colour=(255, 255, 255), faces=20, transform=np.identity(4, dtype=float), pos = None):
+        super().__init__(colour=colour, transform = transform, pos= pos)
 
-        self.scale_x(diameter)
+        self.scale_x(radius)
         self.scale_y(height)
-        self.scale_z(diameter)
+        self.scale_z(radius)
 
         radians_per_face = 2 * np.pi / faces
 
